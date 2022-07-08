@@ -1,12 +1,11 @@
-
 export function canvasTree(target = document.body) {
     const fontSize = 13
     const padding = 5
     const nodeMargin = 20
     const canvasPadding = 20
     const nodeHeight = fontSize + padding * 2
-    const levelHeight = nodeHeight*3
-// detect event on nodes
+    const levelHeight = nodeHeight * 3
+    // detect event on nodes
     const nodes = []
     let ctx
     const initCanvas = () => {
@@ -15,12 +14,18 @@ export function canvasTree(target = document.body) {
         const cx = [Infinity, 0]
         const cy = [Infinity, 0]
         canvas.addEventListener('mousemove', (e) => {
-            const {offsetX, offsetY} = e
+            const {
+                offsetX,
+                offsetY
+            } = e
             nodes.forEach(fn => fn(offsetX, offsetY))
         });
         walkNode(a => {
             if (a.draw) {
-                const {x, y} = a
+                const {
+                    x,
+                    y
+                } = a
                 if (x[0] < cx[0]) cx[0] = x[0]
                 if (x[1] > cx[1]) cx[1] = x[1]
                 if (y[0] < cy[0]) cy[0] = y[0]
@@ -39,15 +44,19 @@ export function canvasTree(target = document.body) {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
     }
-
-// move target
-    const movePos = ({x: px = [], y: py = []}, x, y) => {
+    // move target
+    const movePos = ({
+        x: px = [],
+        y: py = []
+    }, x, y) => {
         px.forEach((a, i) => px[i] = a + x)
         py.forEach((a, i) => py[i] = a + y)
     }
     const moveGroupPos = (g) => {
         if (g) {
-            const [{x: [a, b = a]}, , ...arr] = g
+            const [{
+                x: [a, b = a]
+            }, , ...arr] = g
             const x0 = arr[0].x[0]
             const xx = arr[arr.length - 1].x
             const x1 = xx[1] || xx[0]
@@ -58,17 +67,17 @@ export function canvasTree(target = document.body) {
             })
         }
     }
-
-
-// create point
-    const point = (level = 0) => {
+    // create point
+    const point = () => {
         return {
-            l: level,
             g: null, // the group which point to the point
             x: [0],
             y: [0],
-            line({y, x, w}) {
-                console.log('point', this.x, this.y)
+            line({
+                y,
+                x,
+                w
+            }) {
                 ctx.moveTo(this.x[0], this.y[0])
                 const [a, b] = y
                 if (isNaN(b)) {
@@ -83,8 +92,7 @@ export function canvasTree(target = document.body) {
             }
         }
     }
-
-// create text node
+    // create text node
     const node = (str, level = 0) => {
         const l = str.length
         const w = l * fontSize + padding * 2
@@ -99,14 +107,12 @@ export function canvasTree(target = document.body) {
                 // todo redraw
             }
         });
-
         return {
             s: str,
-            g: null,  // the group which point to the node
-            f: 0,     // position fixed
-            w,        // node width
-            x: px,    // x positions
-            y: py,    // y positions
+            g: null, // the group which point to the node
+            w, // node width
+            x: px, // x positions
+            y: py, // y positions
             v: level,
             draw(parent) {
                 ctx.moveTo(px[0], py[0])
@@ -117,7 +123,10 @@ export function canvasTree(target = document.body) {
                 const mx = px[0] + w / 2
                 ctx.fillText(str, mx, py[0] + h / 2, fontSize * str.length)
                 if (parent) {
-                    const {x, y} = parent
+                    const {
+                        x,
+                        y
+                    } = parent
                     const [a, b] = x, [c, d] = y
                     ctx.moveTo(mx, py[0])
                     let my = py[0] - levelHeight / 2
@@ -136,13 +145,16 @@ export function canvasTree(target = document.body) {
             }
         }
     }
-
-// group schema:  [parent,width,...nodes|points]
-// if there are levels between parent and current node, create point between them.
+    // group schema:  [parent,width,...nodes|points]
+    // if there are levels between parent and current node, create point between them.
     const fillPoints = (group) => {
-        const [parent, , {v: l1}] = group
+        const [parent, , {
+            v: l1
+        }] = group
         if (parent) {
-            const {v: l0} = parent
+            const {
+                v: l0
+            } = parent
             let c = l1 - l0
             let p = parent
             while (c-- > 1) {
@@ -152,8 +164,7 @@ export function canvasTree(target = document.body) {
             p.g = group
         }
     }
-
-// group nodes if they have same level and parent.
+    // group nodes if they have same level and parent.
     const addToLv = (n, p, l) => {
         if (!lvsMap[l]) {
             lvs.push(l)
@@ -165,7 +176,6 @@ export function canvasTree(target = document.body) {
         group.push(n)
         return n
     }
-
     const walkGroup = (fn) => {
         let l = lvs.length
         while (l--) {
@@ -178,10 +188,8 @@ export function canvasTree(target = document.body) {
             ns.forEach(fn)
         }))
     }
-
-
-// you already have the formatted tree
-// now you should calculate the coordinates of each node and point.
+    // you already have the formatted tree
+    // now you should calculate the coordinates of each node and point.
     const fixPosition = () => {
         let beforeX = 0
         const distanceN = []
@@ -199,9 +207,17 @@ export function canvasTree(target = document.body) {
                     if (idx > -1) {
                         margin = distance[idx]
                     }
-                    const {x, y, w = 0, g} = node
+                    const {
+                        x,
+                        y,
+                        w = 0,
+                        g
+                    } = node
                     const px = beforeX - x[0]
-                    movePos({x, y}, px, h - y[0])
+                    movePos({
+                        x,
+                        y
+                    }, px, h - y[0])
                     moveGroupPos(g)
                     const ww = w + margin
                     beforeX += ww
@@ -219,7 +235,6 @@ export function canvasTree(target = document.body) {
             }
         })
     }
-
     const draw = () => {
         initCanvas()
         walkGroup(gs => gs.forEach(([p, , ...ns]) => {
@@ -231,14 +246,17 @@ export function canvasTree(target = document.body) {
         }))
         ctx.stroke()
     }
-
-// levels e.g [1,2,3,4]
+    // levels e.g [0,1,2,3,4]
     const lvs = []
-// Map<level,group[]>
+    // Map<level,group[]>
     const lvsMap = {}
     return {
         load(data) {
-            const parse = ({name, level, children}, parent) => {
+            const parse = ({
+                name,
+                level,
+                children
+            }, parent) => {
                 const n = node(name, level)
                 addToLv(n, parent, level)
                 if (children && children.length) {
